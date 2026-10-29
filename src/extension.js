@@ -4,15 +4,18 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { analyze, inside, secret } = require('./analyzer');
+const { locale, createTranslator } = require('../media/i18n');
 
 function activate(context) {
   context.subscriptions.push(vscode.commands.registerCommand('projectFlow.open', async uri => {
+    const language = locale(vscode.env.language);
+    const t = createTranslator(language);
     let folder = uri && vscode.workspace.getWorkspaceFolder(uri);
     if (!folder) {
       const folders = vscode.workspace.workspaceFolders || [];
       folder = folders.length === 1 ? folders[0] : await vscode.window.showWorkspaceFolderPick();
     }
-    if (!folder || folder.uri.scheme !== 'file') { vscode.window.showInformationMessage('로컬 프로젝트 폴더를 먼저 열어주세요.'); return; }
+    if (!folder || folder.uri.scheme !== 'file') { vscode.window.showInformationMessage(t('openWorkspace')); return; }
     const root = await fs.realpath(folder.uri.fsPath);
     let directory = root;
     if (uri) {
@@ -27,13 +30,13 @@ function activate(context) {
     });
     const nonce = crypto.randomBytes(18).toString('base64');
     const resource = name => panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', name));
-    panel.webview.html = `<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}'; img-src ${panel.webview.cspSource} data:;"><link rel="stylesheet" href="${resource('style.css')}"></head><body>
-      <header><div class="brand"><img class="brand-logo" src="${resource('icon.svg')}" width="30" height="30" alt=""><strong>Project Flow</strong><span class="badge">EXPLORER</span></div><div class="actions"><input id="search" type="search" placeholder="파일 검색…" aria-label="파일 검색"><button id="refresh" title="구조도 새로고침">↻ 새로고침</button></div></header>
-      <nav><div id="breadcrumbs" aria-label="현재 디렉토리"></div><div class="actions"><label class="toggle"><input id="details" type="checkbox" checked>폴더 내부 연결</label><label class="toggle"><input id="libraries" type="checkbox">라이브러리 <span id="toggle-label">OFF</span></label></div></nav>
-      <main id="viewport" aria-label="프로젝트 파일 구조도"><div id="world"><svg id="connections" xmlns="http://www.w3.org/2000/svg"></svg><div id="nodes"></div></div><div id="empty" hidden></div><div class="legend"><span class="dot directory"></span>폴더 포함 ⋯ <span class="dot reference"></span>참조 방향 → <span class="dot library"></span>외부 패키지</div><div class="zoom"><button id="minus" aria-label="축소">−</button><span id="scale">100%</span><button id="plus" aria-label="확대">+</button><button id="fit">화면 맞춤</button></div></main>
-      <aside id="edge-panel" hidden aria-label="연결 상세"><div class="edge-panel-header"><strong>연결 상세</strong><button id="close-edge" aria-label="연결 상세 닫기">×</button></div><div id="edge-summary"></div><div id="edge-symbols"></div></aside>
-      <footer><span id="status" role="status">프로젝트 분석 준비 중…</span><span>화살표 클릭: 함수·변수 목록 · 더블클릭: 파일 열기 · 드래그: 이동</span></footer>
-      <script nonce="${nonce}" src="${resource('geometry.js')}"></script><script nonce="${nonce}" src="${resource('main.js')}"></script></body></html>`;
+    panel.webview.html = `<!doctype html><html lang="${language}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}'; img-src ${panel.webview.cspSource} data:;"><link rel="stylesheet" href="${resource('style.css')}"></head><body>
+      <header><div class="brand"><img class="brand-logo" src="${resource('icon.svg')}" width="30" height="30" alt=""><strong>Project Flow</strong><span class="badge">EXPLORER</span></div><div class="actions"><input id="search" type="search" placeholder="${t('search')}" aria-label="${t('searchLabel')}"><button id="refresh" title="${t('refreshTitle')}">↻ ${t('refresh')}</button></div></header>
+      <nav><div id="breadcrumbs" aria-label="${t('breadcrumbs')}"></div><div class="actions"><label class="toggle"><input id="details" type="checkbox" checked>${t('details')}</label><label class="toggle"><input id="libraries" type="checkbox">${t('libraries')} <span id="toggle-label">OFF</span></label></div></nav>
+      <main id="viewport" aria-label="${t('graph')}"><div id="world"><svg id="connections" xmlns="http://www.w3.org/2000/svg"></svg><div id="nodes"></div></div><div id="empty" hidden></div><div class="legend"><span class="dot directory"></span>${t('containsLegend')} <span class="dot reference"></span>${t('referenceLegend')} <span class="dot library"></span>${t('packages')}</div><div class="zoom"><button id="minus" aria-label="${t('zoomOut')}">−</button><span id="scale">100%</span><button id="plus" aria-label="${t('zoomIn')}">+</button><button id="fit">${t('fit')}</button></div></main>
+      <aside id="edge-panel" hidden aria-label="${t('edgeDetails')}"><div class="edge-panel-header"><strong>${t('edgeDetails')}</strong><button id="close-edge" aria-label="${t('closeEdge')}">×</button></div><div id="edge-summary"></div><div id="edge-symbols"></div></aside>
+      <footer><span id="status" role="status">${t('preparing')}</span><span>${t('help')}</span></footer>
+      <script nonce="${nonce}" src="${resource('i18n.js')}"></script><script nonce="${nonce}" src="${resource('geometry.js')}"></script><script nonce="${nonce}" src="${resource('main.js')}"></script></body></html>`;
     let libraries = false;
     let details = true;
     let graph;
@@ -46,10 +49,10 @@ function activate(context) {
       busy = true;
       panel.webview.postMessage({ type: 'loading' });
       try {
-        graph = await analyze(root, directory, libraries, details);
+        graph = await analyze(root, directory, libraries, details, language);
         directory = graph.directory;
         if (!disposed) panel.webview.postMessage({ type: 'graph', graph });
-      } catch (error) { if (!disposed) panel.webview.postMessage({ type: 'error', message: error.message }); }
+      } catch (error) { if (!disposed) panel.webview.postMessage({ type: 'error', message: t('analysisFailed') }); }
       finally { busy = false; if (pending) { pending = false; void refresh(); } }
     }
     const listener = panel.webview.onDidReceiveMessage(async message => {
@@ -71,7 +74,7 @@ function activate(context) {
           if (!inside(root, target) || secret(path.basename(target))) return;
           await vscode.window.showTextDocument(vscode.Uri.file(target), { preview: false, viewColumn: vscode.ViewColumn.Beside });
         }
-      } catch { vscode.window.showWarningMessage('파일이 이동되었거나 접근할 수 없습니다. 새로고침해 주세요.'); }
+      } catch { vscode.window.showWarningMessage(t('inaccessible')); }
     });
     let timer;
     const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(folder, '**/*'));

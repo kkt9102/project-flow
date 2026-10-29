@@ -2,6 +2,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const ts = require('typescript');
+const { createTranslator } = require('../media/i18n');
 const { collectReferences, exportKinds } = require('./references');
 const SOURCE = /\.(?:[cm]?[jt]sx?)$/i;
 const HIDDEN = new Set(['.git', '.svn', '.hg', '.codex', '.next', 'dist', 'build', 'coverage']);
@@ -12,10 +13,11 @@ function inside(root, target) {
 }
 function secret(name) { return /^\.env(?:\.|$)/i.test(name) || /\.(?:pem|key|p12|pfx)$/i.test(name); }
 function packageName(specifier) { return specifier.startsWith('@') ? specifier.split('/').slice(0, 2).join('/') : specifier.split('/')[0]; }
-async function analyze(root, directory, showLibraries, showDetails = false) {
+async function analyze(root, directory, showLibraries, showDetails = false, language = 'ko') {
+  const t = createTranslator(language);
   root = await fs.realpath(root);
   directory = await fs.realpath(directory);
-  if (!inside(root, directory)) throw new Error('프로젝트 밖의 디렉토리입니다.');
+  if (!inside(root, directory)) throw new Error(t('outside'));
   let examined = 0;
   let truncated = false;
   const files = [];
@@ -34,7 +36,7 @@ async function analyze(root, directory, showLibraries, showDetails = false) {
   async function walk(dir) {
     let children;
     try { children = await fs.readdir(dir, { withFileTypes: true }); }
-    catch { warnings.push('일부 폴더에 접근하지 못했습니다.'); return; }
+    catch { warnings.push(t('folderWarning')); return; }
     for (const item of children) {
       if (++examined > LIMIT) { truncated = true; return; }
       if (item.isSymbolicLink() || HIDDEN.has(item.name) || item.name === 'node_modules' || secret(item.name)) continue;
@@ -56,7 +58,7 @@ async function analyze(root, directory, showLibraries, showDetails = false) {
       if (!read.error) {
         const converted = ts.convertCompilerOptionsFromJson(read.config.compilerOptions || {}, configDir);
         options = { ...options, ...converted.options };
-        if (read.config.extends) warnings.push('extends 설정 상속은 지원하지 않습니다.');
+        if (read.config.extends) warnings.push(t('extendsWarning'));
       }
       break;
     }
@@ -106,7 +108,7 @@ async function analyze(root, directory, showLibraries, showDetails = false) {
     if (!source) continue;
     let stat;
     try { stat = await fs.stat(file); } catch { continue; }
-    if (stat.size > 512 * 1024) { warnings.push('512KB 초과 소스는 분석에서 제외했습니다.'); continue; }
+    if (stat.size > 512 * 1024) { warnings.push(t('largeWarning')); continue; }
     let text;
     try { text = await fs.readFile(file, 'utf8'); } catch { continue; }
     const ast = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);

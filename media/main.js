@@ -6,6 +6,7 @@ let graph;
 let selected;
 let selectedEdge;
 const geometry = window.FlowGeometry;
+const t = window.FlowI18n.createTranslator(document.documentElement.lang);
 let scale = 1;
 let offset = { x: 64, y: 64 };
 const positions = new Map();
@@ -77,21 +78,21 @@ function showEdge(edge) {
   const name = id => graph.nodes.find(n => n.id === id)?.relativePath || graph.nodes.find(n => n.id === id)?.name || id;
   $('edge-summary').textContent = `${name(edge.source)} → ${name(edge.target)}`;
   const list = $('edge-symbols'); list.replaceChildren();
-  if (edge.relation === 'contains') list.append(element('p', 'edge-note', '폴더에 포함된 파일입니다. 함수·변수 참조는 녹색 또는 보라색 화살표에서 확인하세요.'));
+  if (edge.relation === 'contains') list.append(element('p', 'edge-note', t('containsNote')));
   else {
-    const labels = { function: '함수', variable: '변수', class: '클래스', interface: '인터페이스', type: '타입', enum: '열거형', symbol: '심볼' };
+    const labels = { function: t('function'), variable: t('variable'), class: t('class'), interface: t('interface'), type: t('type'), enum: t('enum'), symbol: t('symbol') };
     for (const symbol of edge.symbols || []) {
       const row = element('div', 'symbol-row');
-      const kind = symbol.syntax === 'side-effect' ? '모듈 로드' : symbol.imported === '*' ? '모듈 전체' : labels[symbol.kind] || '심볼';
+      const kind = symbol.syntax === 'side-effect' ? t('moduleLoad') : symbol.imported === '*' ? t('wholeModule') : labels[symbol.kind] || t('symbol');
       row.append(element('span', 'symbol-kind', kind));
       const title = symbol.syntax === 'side-effect' ? symbol.specifier : symbol.imported === 'default' ? `${symbol.local || 'default'} (default)` : symbol.imported + (symbol.local && symbol.local !== symbol.imported ? ` → ${symbol.local}` : '');
       row.append(element('strong', '', title));
       row.append(element('span', 'symbol-location', `${symbol.file}:${symbol.line} · ${symbol.syntax}${symbol.typeOnly ? ' · type-only' : ''}`));
       list.append(row);
     }
-    if (!edge.symbols?.length) list.append(element('p', 'edge-note', '표시할 함수·변수 이름이 없습니다.'));
-    if (edge.symbolsTruncated) list.append(element('p', 'edge-note', '목록은 최대 200개까지 표시합니다.'));
-    list.append(element('p', 'edge-note', 'import/export에 명시된 이름입니다. 실제 호출·사용 횟수는 분석하지 않습니다. 재수출이나 외부 패키지의 종류가 확인되지 않으면 심볼로 표시합니다.'));
+    if (!edge.symbols?.length) list.append(element('p', 'edge-note', t('noSymbols')));
+    if (edge.symbolsTruncated) list.append(element('p', 'edge-note', t('symbolLimit')));
+    list.append(element('p', 'edge-note', t('symbolNote')));
   }
   highlight();
 }
@@ -123,17 +124,17 @@ function render(data) {
     if (!positions.has(node.id)) positions.set(node.id, { x: Math.floor(index / rows) * geometry.GAP_X, y: (index % rows) * geometry.GAP_Y + (Math.floor(index / rows) % 2) * 70 });
     const card = element('button', 'node ' + node.kind);
     card.dataset.id = node.id;
-    card.title = node.kind === 'package' ? `${node.name} · 외부 패키지 참조` : `${node.id}\n더블클릭하여 열기`;
+    card.title = node.kind === 'package' ? `${node.name} · ${t('packageReference')}` : `${node.id}\n${t('doubleClick')}`;
     const heading = element('div', 'node-heading'); heading.append(icon(node), element('strong', '', node.name)); card.append(heading);
     const details = element('div', 'details');
     if (node.relativePath) details.append(element('span', 'file-path', node.relativePath));
     const bytes = node.bytes || 0;
-    details.append(element('span', '', node.kind === 'directory' ? '디렉토리 열기 ↗' : node.kind === 'package' ? '외부 패키지' : `${bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB'} · ${degrees.get(node.id)} 연결`));
+    details.append(element('span', '', node.kind === 'directory' ? t('openDirectory') : node.kind === 'package' ? t('package') : `${bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB'} · ${t('connections', { count: degrees.get(node.id) })}`));
     card.append(details); cards.set(node.id, card); $('nodes').append(card); positionCard(node.id);
     if (node.kind === 'directory') {
       const children = data.nodes.filter(n => n.parentId === node.id);
       for (const child of children.slice(0, 3)) details.append(element('span', 'child-name', child.name));
-      if (children.length > 3) details.append(element('span', 'child-name', `+${children.length - 3}개`));
+      if (children.length > 3) details.append(element('span', 'child-name', t('more', { count: children.length - 3 })));
     }
     card.addEventListener('click', () => { selectedEdge = null; $('edge-panel').hidden = true; selected = selected === node.id ? null : node.id; highlight(); });
     const open = () => {
@@ -155,11 +156,11 @@ function render(data) {
     });
   });
   for (const edge of data.edges) {
-    const label = `${data.nodes.find(n => n.id === edge.source)?.name} → ${data.nodes.find(n => n.id === edge.target)?.name} 연결 상세`;
+    const label = t('edgeLabel', { source: data.nodes.find(n => n.id === edge.source)?.name, target: data.nodes.find(n => n.id === edge.target)?.name });
     const group = svg('g', { class: 'edge', role: 'button', tabindex: 0, 'aria-label': label });
     const line = svg('path', { class: 'connection ' + edge.relation, 'marker-end': `url(#${edge.relation === 'contains' ? 'contains-arrow' : edge.relation === 'library' ? 'library-arrow' : 'arrow'})` });
     const hit = svg('path', { class: 'edge-hit' });
-    const title = svg('title', {}); title.textContent = edge.relation === 'contains' ? '폴더에 포함된 파일' : `${edge.count}개 참조`; line.append(title);
+    const title = svg('title', {}); title.textContent = edge.relation === 'contains' ? t('containsTitle') : t('referenceCount', { count: edge.count }); line.append(title);
     group.append(hit, line); $('connections').append(group); lines.push({ edge, path: line, hit });
     group.addEventListener('pointerdown', event => event.stopPropagation());
     group.addEventListener('click', event => { event.stopPropagation(); showEdge(edge); });
@@ -176,11 +177,11 @@ function render(data) {
     const button = element('button', 'crumb', name); button.addEventListener('click', () => vscode.postMessage({ type: 'navigate', path: target })); $('breadcrumbs').append(button);
   });
   $('empty').hidden = data.nodes.length !== 0;
-  $('empty').textContent = '표시할 파일이 없습니다.';
+  $('empty').textContent = t('empty');
   const fileCount = data.nodes.filter(node => node.kind === 'file').length;
   const directoryCount = data.nodes.filter(node => node.kind === 'directory').length;
   const packageCount = data.nodes.filter(node => node.kind === 'package').length;
-  $('status').textContent = `현재 구조도: 파일 ${fileCount}개 · 디렉토리 ${directoryCount}개${packageCount ? ` · 외부 패키지 ${packageCount}개` : ''} · ${data.edges.length} 연결 · ${data.analyzedFiles} 소스 분석${data.truncated ? ' · 표시/분석 한도 도달: 하위 폴더로 이동하세요' : ''}${data.warnings.length ? ' · ' + data.warnings.join(' ') : ''}`;
+  $('status').textContent = t('status', { files: fileCount, directories: directoryCount }) + (packageCount ? t('packageCount', { count: packageCount }) : '') + t('analysisCount', { edges: data.edges.length, files: data.analyzedFiles }) + (data.truncated ? t('limit') : '') + (data.warnings.length ? ' · ' + data.warnings.join(' ') : '');
   if (layoutChanged) { scale = 1; offset = { x: 64, y: 50 }; transform(); }
   highlight();
 }
@@ -213,7 +214,7 @@ $('details').addEventListener('change', () => { saveOptions(); vscode.postMessag
 window.addEventListener('message', event => {
   const data = event.data;
   if (data.type === 'graph') render(data.graph);
-  if (data.type === 'loading') $('status').textContent = '프로젝트 분석 중…';
+  if (data.type === 'loading') $('status').textContent = t('loading');
   if (data.type === 'error') { $('status').textContent = data.message; $('empty').hidden = false; $('empty').textContent = data.message; }
 });
 transform();

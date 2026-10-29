@@ -1,0 +1,4 @@
+{
+  "description": "Explore project directories and JS/TS file references in an interactive graph.",
+  "command.open": "Project Flow: Open Project Graph"
+}

@@ -10,13 +10,19 @@ Figma 시안의 어두운 캔버스와 파일 카드, 경로 표시, 라이브�
 ## 설치 및 실행
 
 1. VS Code에서 `Ctrl+Shift+P` (macOS `Cmd+Shift+P`) → `Extensions: Install from VSIX...`.
-2. [GitHub Releases](https://github.com/kkt9102/project-flow/releases/latest)에서 받은 `project-flow-explorer-0.0.1.vsix` 선택.
+2. [GitHub Releases](https://github.com/kkt9102/project-flow/releases) 또는 로컬 패키징으로 받은 VSIX 선택. 영어 지원 버전의 파일명은 `project-flow-explorer-0.0.2.vsix`입니다.
 3. 분석할 프로젝트 폴더를 열기.
 4. 명령 팔레트 → `Project Flow: 프로젝트 구조도 열기`.
 
 탐색기 파일·폴더 우클릭 메뉴에서도 열 수 있습니다. 설치를 위해 Marketplace 업로드는 필요하지 않습니다.
 
 ## 사용법
+
+### 언어 / Language
+
+VS Code 표시 언어가 한국어이면 한국어로, 영어 및 그 외 언어에서는 영어로 표시합니다. 언어를 변경한 뒤 구조도 탭을 다시 열어주세요. 명령 메뉴, 버튼, 검색, 툴팁, 연결 상세, 개수 및 경고 문구에 적용됩니다. 사용자 파일명·코드의 함수·변수 이름은 번역하지 않습니다.
+
+The extension supports English and Korean and follows the VS Code display language. Other languages fall back to English. Reopen the graph after changing the display language. File names and code symbols remain unchanged. Use **Project Flow: Open Project Graph** from the Command Palette.
 
 하단에 현재 구조도의 파일 수와 디렉토리 수를 표시합니다. 외부 패키지는 별도로 집계합니다. 폴더 이동 및 내부 연결·라이브러리 토글 변경 시 갱신되며, 화면 밖으로 이동한 카드도 포함한 현재 구조도 기준입니다. 검색은 강조만 변경하므로 개수는 유지합니다. 숨김·제외된 파일이나 폴더 내부에서 아직 표시하지 않은 파일까지 합산한 전체 프로젝트 개수는 아닙니다.
 
@@ -87,7 +93,7 @@ SVG 파일·폴더·패키지 아이콘은 직접 작성했으며 프로젝트 M
 
 1. Microsoft 계정으로 로그인하고 게시자(Publisher)를 만듭니다.
 2. 이 프로젝트의 `publisher`는 `kkt9102`입니다. 해당 Marketplace 게시자 계정에서 업로드합니다.
-3. 최초 공개 버전은 `0.0.1`이며 저장소·이슈 주소는 `package.json`에 설정되어 있습니다.
+3. 최초 공개 버전은 `0.0.1`, 영어 지원 버전은 `0.0.2`입니다. 저장소·이슈 주소는 `package.json`에 설정되어 있습니다.
 4. `yarn lint`, `npm test`, `npm run package`를 실행해 VSIX를 다시 만듭니다.
 5. 게시자 관리 → **New extension → Visual Studio Code** → 새 VSIX를 업로드합니다.
 6. 다음 버전부터는 `package.json`의 `version`을 올리고 패키징한 뒤 **More Actions → Update**로 올립니다. 출력 파일명은 버전에 맞춰 자동 생성됩니다.

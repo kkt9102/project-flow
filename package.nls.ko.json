@@ -1,0 +1,4 @@
+{
+  "description": "프로젝트 디렉토리와 JS/TS 파일 참조 관계를 탐색하는 인터랙티브 구조도",
+  "command.open": "Project Flow: 프로젝트 구조도 열기"
+}
