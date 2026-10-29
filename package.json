@@ -1,0 +1,70 @@
+{
+  "name": "project-flow-explorer",
+  "displayName": "Project Flow Explorer",
+  "description": "프로젝트 디렉토리와 JS/TS 파일 참조 관계를 탐색하는 인터랙티브 구조도",
+  "version": "0.0.1",
+  "publisher": "kkt9102",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "graph",
+    "imports",
+    "dependencies",
+    "project",
+    "flow"
+  ],
+  "main": "./src/extension.js",
+  "license": "MIT",
+  "activationEvents": [
+    "onCommand:projectFlow.open"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "projectFlow.open",
+        "title": "Project Flow: 프로젝트 구조도 열기",
+        "icon": {
+          "light": "media/command-light.svg",
+          "dark": "media/command-dark.svg"
+        }
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "projectFlow.open",
+          "group": "navigation@100",
+          "when": "resourceScheme == file"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "node --check src/extension.js && node --check src/analyzer.js && node --check src/references.js && node --check media/main.js && node --check media/geometry.js",
+    "test": "node --test test/*.test.js",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.2"
+  },
+  "overrides": {
+    "@azure/msal-node": "^7.1.0"
+  },
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kkt9102/project-flow.git"
+  },
+  "homepage": "https://github.com/kkt9102/project-flow#readme",
+  "bugs": {
+    "url": "https://github.com/kkt9102/project-flow/issues"
+  }
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Project Flow Explorer</title>
+  <desc>파일 박스 세 개를 직각 화살표로 연결한 프로젝트 구조도 아이콘</desc>
+  <rect x="4" y="4" width="248" height="248" rx="48" fill="#25272C"/>
+  <rect x="4.75" y="4.75" width="246.5" height="246.5" rx="47.25" stroke="#444952" stroke-width="1.5"/>
+  <path d="M106 128H136V69H159M136 128V187H159" stroke="#90D5AD" stroke-width="7" stroke-linejoin="miter"/>
+  <path d="M156 61L168 69L156 77V61ZM156 179L168 187L156 195V179Z" fill="#90D5AD"/>
+  <rect x="32" y="96" width="74" height="64" rx="3" fill="#D9E0E5"/>
+  <path d="M35 96H103Q106 96 106 99V115H32V99Q32 96 35 96Z" fill="#FFFFFF"/>
+  <path d="M32 115H106" stroke="#A7B2BC"/>
+  <rect x="40" y="102" width="8" height="8" rx="1" fill="#6D9FD3"/>
+  <path d="M56 106H91" stroke="#667380" stroke-width="3"/>
+  <path d="M42 129H78M42 140H65" stroke="#8796A4" stroke-width="3"/>
+  <rect x="168" y="40" width="56" height="58" rx="3" fill="#D9E0E5"/>
+  <path d="M171 40H221Q224 40 224 43V58H168V43Q168 40 171 40Z" fill="#FFFFFF"/>
+  <path d="M168 58H224" stroke="#A7B2BC"/>
+  <rect x="175" y="46" width="7" height="7" rx="1" fill="#D5B36D"/>
+  <path d="M189 49.5H215" stroke="#667380" stroke-width="3"/>
+  <path d="M177 72H211M177 83H200" stroke="#8796A4" stroke-width="3"/>
+  <rect x="168" y="158" width="56" height="58" rx="3" fill="#D9E0E5"/>
+  <path d="M171 158H221Q224 158 224 161V176H168V161Q168 158 171 158Z" fill="#FFFFFF"/>
+  <path d="M168 176H224" stroke="#A7B2BC"/>
+  <rect x="175" y="164" width="7" height="7" rx="1" fill="#A78BD5"/>
+  <path d="M189 167.5H215" stroke="#667380" stroke-width="3"/>
+  <path d="M177 190H211M177 201H200" stroke="#8796A4" stroke-width="3"/>
+</svg>

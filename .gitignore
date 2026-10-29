@@ -1,0 +1,15 @@
+node_modules/
+*.vsix
+*.sha256
+.codex/
+develop.md
+.DS_Store
+.local-artifacts/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+.npmrc
